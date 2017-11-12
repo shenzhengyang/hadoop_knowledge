@@ -1,0 +1,118 @@
+简述hadoop啊装步骤
+1.root登录账户
+2.修改ip
+3.修改host
+4.配置ssh免密登录
+5.关闭防火墙
+6.安装jdk
+7.解压hadoop
+8.配置hadoop配置文件，hadoop-env.sh core-site.xml mapreduce-site.xml hdfs-site.xml yarn-site.xml
+9.修改profile或bashrc
+10.格式化hadoop namenode-format
+11.启动结点start-all.sh
+hadoop启动有哪些进程，分别有什么作用
+namenode 管理hdfs文件块元数据 管理datanode文件block
+secondname 负责checkpoint 对一定范围内的数据做快照备份
+datanode 存储数据块，负责客户端对数据快io相应
+jobtracker 管理任务，并将任务分配给tasktracker
+tasktracker 执行jobtracker分配的任务
+
+ResourceManager
+nodeManager
+journalnode
+zookeeper
+zkfc
+写出以下shell 命令
+（1）杀死一个job
+hadoop job -list 得到job的id
+hadoop job -kill jobid
+(2)删除hdfs 上的/tmp/aaa 目录
+hdfs dfs -rm -r /tmp/aaa
+(3)增加一个新的结点在新的结点上执行和删除一个结点
+hadoop daemon.sh start datanode
+hadoop daemon.sh start tasktracker/nodemanager
+在conf下的excludes 文件中列出要下线的datanode主机名
+hadoop dfsadmin -refreshnodes --a datanode
+hadoop dfsadmin -refreshnodes --a tasktracker/nodemanager
+
+hadoop调度器并说明工作方法
+FIFO 先进先出原则
+capacity 计算能力调度器
+fair 公平调度，所有的job具有相同的资源
+
+mapreduce 语言
+java hive sparkstreaming
+
+java sreaming pipe 开发map/reduce 各有那些有点
+java 可以编写实现复杂的逻辑，需求简单显得繁琐
+hiveSql 针对hive数据表进行编写，但对逻辑复杂的很难进行
+spark sql 将简单的sql 转化为mapreduce程序
+
+hive有那些保存元数据
+内嵌数据库 derby 小不常用 由于单节点
+mysql 单用户模型 多用户模型 远程用户模型
+
+hadoop 实现二级排序
+第一种方法 reducer 将所有的key 缓存起来 然后在对他们做一个reducer(存在内存耗尽的错误)
+第二种方法 将排序的任务交给mapreduce框架shuffle 
+编写一个partitioner 确保拥有相同的key的所有数据被发往同一个reduce
+编写一个comparator 以便数据到达reducer后按原始的key分组
+
+简述hadoop实现join的几种方法
+map side join 大小表join 的场景 借助distribute cache
+reduce side join 
+
+简述mapreduce 中的combine和partition的作用
+combiner 发生在map的最后一个阶段，其原理是一个小型的reduce 主要作用减少输出到reduce的数据量，提高执行效率
+partition 将map阶段产生的kv分配给不同的reduce task 处理，分担reduce 阶段负载
+
+hive 内部表和外部表
+1.内部表是数据仓库，外部表由用户建表指定
+2.删除内部表 元数据和数据会被一起删除，外部表只删除元数据，不删除数据
+3.外部表更加安全些，数据组织也方便
+
+Hbase rowKey 怎么创建比较好
+rowKey 创建有规则的rowkey 最好是有序的。
+批量读取的数据应该让他们rowkey连续。
+作为条件查询的关键词组织到rowkey
+
+mapreduce 怎么处理数据倾斜的问题
+1.各分区的数据均匀分布
+2.根据业务特点，设置合适的partition 策略
+3.随机抽样生成partition策略
+
+hadoop 框架怎么来优化
+1.数据本地优化，最大分片应该与快大小相同。
+2.适当使用combine 可以减少shuffle 过程中数据的传输量
+3.导入数据到hdfs 中可以使用flume 或sqoop工具
+4.distcp 复制数据，blancer 平衡集群的负载均衡
+5.hadoop 存档工具的使用减少namenode 每个元数据快的内存消耗
+6.使用原生的native 类库实现压缩和解压
+7.使用支持切分的压缩格式
+8.hadoop 序列化中使用变长格式
+待定还没写完
+
+
+hbase 内部机制是什么
+hbase 是一个能适应联机业务的数据库系统
+物理存储hdbase 持久化数据放在hdfs 上
+存储管理一个表是划分很多region的这些region 分布式放在很多regionserver上
+region 内部还可以划分为store,store内部还可以划分为memstore storefile
+版本管理：hbase 数据更新本质是不断追加新的版本，通过compact 做版本间的合并和region划分
+集群管理:zookeeper + hmaster + hregionserver
+
+mapreduce 是否可以去掉reduce阶段
+可以，集群是为了存储文件设计的不涉及计算，可以去掉reduce
+怎样实现
+去掉后不排序，不进行shuffle操作
+
+hadoop 中常用的压缩算法
+Lzo
+Gzip
+Default
+Snapyy
+进行数据压缩最好将数据转化为sequeceFile 或者 partquetFile
+
+mapreduce 的调度模式
+
+
